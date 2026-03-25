@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aaron Nemis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f11;--panel:#18181c;--panel2:#202025;--panel3:#28282e;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --text:#eeeef0;--sub:rgba(238,238,240,.42);--sub2:rgba(238,238,240,.22);
+  --accent:#7c6af7;--green:#30d158;--red:#ff453a;--yellow:#ffd60a;
+  --spotify:#1db954;--discord:#5865f2;
+}
+html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);
+  font-family:'DM Sans',-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+
+/* LOADER */
+#loader{position:fixed;inset:0;z-index:200;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .8s ease,visibility .8s}
+#loader.out{opacity:0;visibility:hidden;pointer-events:none}
+.ld-av{width:68px;height:68px;border-radius:50%;overflow:hidden;
+  border:1.5px solid rgba(124,106,247,.25);background:var(--panel2);
+  box-shadow:0 0 0 8px rgba(124,106,247,.07),0 0 40px rgba(124,106,247,.2);
+  animation:ldP 2s ease-in-out infinite}
+.ld-av img{width:100%;height:100%;object-fit:cover;display:block}
+@keyframes ldP{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.ld-track{width:130px;height:1.5px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+.ld-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--accent),#a78bfa);
+  animation:ldF 2s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes ldF{to{width:100%}}
+.ld-lbl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--sub2);
+  font-family:'DM Mono',monospace;animation:ldB 1.2s ease-in-out infinite}
+@keyframes ldB{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* MAIN */
+#main{opacity:0;transition:opacity .9s ease}
+#main.show{opacity:1}
+.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+
+/* window */
+.win{width:100%;max-width:520px;background:var(--panel);
+  border:1px solid var(--border);border-radius:14px;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.03) inset,0 40px 100px rgba(0,0,0,.75);
+  opacity:0;transform:translateY(20px) scale(.985);
+  animation:winIn .65s cubic-bezier(.2,.8,.4,1) .1s forwards}
+@keyframes winIn{to{opacity:1;transform:none}}
+
+/* titlebar */
+.tbar{height:42px;background:rgba(255,255,255,.025);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:7px;position:relative}
+.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.dr{background:#ff453a}.dy{background:#ffd60a}.dg{background:#30d158}
+.tbar-lbl{position:absolute;left:50%;transform:translateX(-50%);
+  font-size:12px;font-weight:500;color:var(--sub);letter-spacing:.01em;white-space:nowrap}
+
+/* top strip */
+.top-strip{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0}
+.clock-badge,.visitor-badge{display:flex;align-items:center;gap:6px;
+  font-size:11px;font-family:'DM Mono',monospace;color:var(--sub2);
+  background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:4px 10px}
+.clock-dot{width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 6px rgba(48,209,88,.6);animation:onP 2s ease-in-out infinite}
+@keyframes onP{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* hero */
+.hero{padding:24px 36px 26px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.av-wrap{position:relative;display:inline-flex;margin-bottom:18px}
+.av-img{width:96px;height:96px;border-radius:50%;object-fit:cover;display:block;
+  border:2px solid rgba(124,106,247,.3);
+  box-shadow:0 0 0 7px rgba(124,106,247,.06),0 12px 36px rgba(0,0,0,.55);
+  background:var(--panel2)}
+.av-online{position:absolute;bottom:4px;right:4px;width:15px;height:15px;border-radius:50%;
+  background:var(--green);border:2.5px solid var(--panel);
+  box-shadow:0 0 10px rgba(48,209,88,.55)}
+.name{font-size:26px;font-weight:600;letter-spacing:-.025em;line-height:1.1}
+.handle{margin-top:6px;font-size:13px;color:var(--sub);font-weight:400}
+.tags{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:16px}
+.tag{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;letter-spacing:.03em;border:1px solid}
+.t1{color:#c4b5fd;border-color:rgba(196,181,253,.2);background:rgba(196,181,253,.05)}
+.t2{color:#fca5a5;border-color:rgba(252,165,165,.2);background:rgba(252,165,165,.05)}
+.t3{color:#fcd34d;border-color:rgba(252,211,77,.2);background:rgba(252,211,77,.05)}
+
+/* sep */
+.sep{height:1px;background:var(--border)}
+
+/* terminal */
+.terminal{background:var(--panel2);border-bottom:1px solid var(--border);
+  padding:14px 22px;font-family:'DM Mono',monospace;font-size:12px;line-height:1.75}
+.term-prompt{color:var(--accent);user-select:none;margin-right:8px}
+.term-out{color:#86efac;display:inline}
+.term-cursor{display:inline-block;width:7px;height:13px;background:#86efac;
+  vertical-align:middle;margin-left:1px;animation:cur .8s step-end infinite}
+@keyframes cur{0%,100%{opacity:1}50%{opacity:0}}
+
+/* discord status */
+.discord-status{display:flex;align-items:center;gap:12px;
+  padding:12px 22px;border-bottom:1px solid var(--border);
+  background:rgba(88,101,242,.04)}
+.ds-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;
+  background:var(--panel3);border:1px solid var(--border)}
+.ds-info{flex:1;min-width:0}
+.ds-name{font-size:12px;font-weight:600}
+.ds-activity{font-size:11px;color:var(--sub);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ds-badge{display:flex;align-items:center;gap:5px;
+  font-size:10px;font-family:'DM Mono',monospace;
+  padding:3px 9px;border-radius:20px;flex-shrink:0;border:1px solid}
+.ds-badge.online{color:#30d158;background:rgba(48,209,88,.1);border-color:rgba(48,209,88,.25)}
+.ds-badge.idle{color:#ffd60a;background:rgba(255,214,10,.1);border-color:rgba(255,214,10,.25)}
+.ds-badge.dnd{color:#ff453a;background:rgba(255,69,58,.1);border-color:rgba(255,69,58,.25)}
+.ds-badge.offline{color:var(--sub2);background:rgba(255,255,255,.05);border-color:var(--border)}
+.ds-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* last.fm now playing */
+.np-section{display:flex;align-items:center;gap:12px;
+  padding:12px 22px;border-bottom:1px solid var(--border);
+  background:rgba(29,185,84,.035)}
+.np-art{width:40px;height:40px;border-radius:7px;object-fit:cover;flex-shrink:0;
+  background:var(--panel3);box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.np-info{flex:1;min-width:0}
+.np-label{font-size:10px;color:var(--spotify);font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:3px}
+.np-label.offline{color:var(--sub2)}
+.np-track{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-artist{font-size:11px;color:var(--sub);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-bars{display:flex;align-items:flex-end;gap:2px;height:16px;flex-shrink:0}
+.np-bar{width:3px;background:var(--spotify);border-radius:2px;
+  animation:npB var(--d) ease-in-out infinite alternate}
+@keyframes npB{from{height:3px}to{height:14px}}
+.np-bars.paused .np-bar{animation-play-state:paused;height:5px;background:var(--sub2)}
+
+/* skills */
+.skills{padding:16px 22px;border-bottom:1px solid var(--border)}
+.skills-title{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--sub2);font-family:'DM Mono',monospace;margin-bottom:11px}
+.skill-grid{display:flex;flex-wrap:wrap;gap:7px}
+.skill{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:8px;
+  background:var(--panel2);border:1px solid var(--border);
+  font-size:11px;font-weight:500;color:var(--sub);
+  transition:border-color .2s,color .2s,background .2s;cursor:default}
+.skill:hover{border-color:var(--border2);color:var(--text);background:var(--panel3)}
+.skill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* socials */
+.socials{padding:16px 22px;display:flex;flex-direction:column;gap:9px}
+.soc{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:11px;
+  background:var(--panel2);border:1px solid var(--border);
+  text-decoration:none;color:var(--text);
+  position:relative;overflow:hidden;
+  transition:border-color .2s,background .2s,transform .18s;cursor:pointer}
+.soc:hover{transform:translateY(-1px)}
+.soc.dis:hover{border-color:rgba(88,101,242,.4);background:rgba(88,101,242,.09)}
+.soc.spt:hover{border-color:rgba(30,215,96,.4);background:rgba(30,215,96,.09)}
+.soc-img{width:38px;height:38px;border-radius:9px;object-fit:cover;flex-shrink:0;
+  background:var(--panel);border:1px solid var(--border)}
+.soc-info{flex:1}
+.soc-n{font-size:13px;font-weight:500}
+.soc-s{font-size:11px;color:var(--sub);margin-top:1px}
+.soc-arr{font-size:16px;color:var(--sub2);transition:transform .2s,color .2s}
+.soc:hover .soc-arr{transform:translateX(2px);color:var(--sub)}
+.spl{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:11px}
+.sp{position:absolute;border-radius:50%;animation:spA .75s ease-out forwards}
+@keyframes spA{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:.85}
+  100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1);opacity:0}
+}
+
+/* news */
+.news{margin:0 22px 22px;border:1px solid var(--border);border-radius:11px;overflow:hidden;
+  background:rgba(255,255,255,.015)}
+.nbar{height:36px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;padding:0 12px;position:relative}
+.nd{width:10px;height:10px;border-radius:50%}
+.ndr{background:#ff453a}.ndy{background:#ffd60a}.ndg{background:#30d158}
+.nbar-lbl{position:absolute;left:50%;transform:translateX(-50%);
+  font-size:11px;color:var(--sub2);font-weight:500;letter-spacing:.04em;white-space:nowrap}
+.ticker{height:40px;overflow:hidden;position:relative;display:flex;align-items:center}
+.thn{position:absolute;left:0;z-index:2;height:100%;display:flex;align-items:center;padding:0 10px;
+  background:linear-gradient(90deg,var(--panel) 60%,transparent);
+  font-size:10px;font-weight:600;letter-spacing:.14em;color:#f87171;
+  font-family:'DM Mono',monospace;white-space:nowrap;pointer-events:none}
+.t-track{display:flex;align-items:center;padding-left:65px;animation:tick 50s linear infinite;white-space:nowrap}
+.ti{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--sub);padding:0 28px 0 0}
+.ti::before{content:'◆';font-size:6px;color:rgba(124,106,247,.4)}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+@media(max-width:480px){
+  .hero{padding:20px 18px 20px}
+  .top-strip,.socials,.skills{padding-left:16px;padding-right:16px}
+  .news{margin:0 16px 18px}
+  .terminal,.discord-status,.np-section{padding-left:16px;padding-right:16px}
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="ld-av">
+    <img src="https://i.supaimg.com/520c45eb-fb85-450c-b726-47c9c17c6e53/809db284-f4e5-4a3e-992e-dfc17a66de46.png" alt="">
+  </div>
+  <div class="ld-track"><div class="ld-fill"></div></div>
+  <div class="ld-lbl">loading</div>
+</div>
+
+<div id="main">
+<div class="page">
+<div class="win">
+
+  <div class="tbar">
+    <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
+    <span class="tbar-lbl">aaron.nemis — profile</span>
+  </div>
+
+  <div class="top-strip">
+    <div class="clock-badge">
+      <div class="clock-dot"></div>
+      <span id="clockTxt">00:00:00</span>
+      <span style="color:var(--sub2);font-size:10px">GMT+7</span>
+    </div>
+    <div class="visitor-badge">
+      <span style="font-size:10px">👁</span>
+      <span id="visitorCount">···</span>
+      <span style="font-size:10px">visitors</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="av-wrap">
+      <img class="av-img" id="avImg"
+        src="https://i.supaimg.com/520c45eb-fb85-450c-b726-47c9c17c6e53/809db284-f4e5-4a3e-992e-dfc17a66de46.png"
+        alt="avatar">
+      <div class="av-online" id="avOnline"></div>
+    </div>
+    <div class="name">Aaron Nemis</div>
+    <div class="handle">@nemis &nbsp;·&nbsp; 17 y/o &nbsp;·&nbsp; 🇹🇭</div>
+    <div class="tags">
+      <span class="tag t1">GrayHat</span>
+      <span class="tag t2">Red Team</span>
+      <span class="tag t3">Hardware Mod</span>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- terminal bio -->
+  <div class="terminal">
+    <span class="term-prompt">nemis@arch ~$</span><span class="term-out" id="termOut"></span><span class="term-cursor" id="termCursor"></span>
+  </div>
+
+  <!-- discord status (Lanyard) -->
+  <div class="discord-status">
+    <img class="ds-av" id="dsAv"
+      src="https://i.supaimg.com/520c45eb-fb85-450c-b726-47c9c17c6e53/b7f06dd4-4ac0-413e-9d37-63c12afb85cb.png"
+      alt="">
+    <div class="ds-info">
+      <div class="ds-name">Aaron Nemis</div>
+      <div class="ds-activity" id="dsActivity">Fetching status…</div>
+    </div>
+    <div class="ds-badge offline" id="dsBadge">
+      <div class="ds-dot"></div>
+      <span id="dsBadgeTxt">...</span>
+    </div>
+  </div>
+
+  <!-- last.fm now playing -->
+  <div class="np-section">
+    <img class="np-art" id="npArt" src="" alt="">
+    <div class="np-info">
+      <div class="np-label" id="npLabel">▶ Now Playing</div>
+      <div class="np-track" id="npTrack">Loading…</div>
+      <div class="np-artist" id="npArtist"></div>
+    </div>
+    <div class="np-bars" id="npBars">
+      <div class="np-bar" style="--d:.6s"></div>
+      <div class="np-bar" style="--d:.9s"></div>
+      <div class="np-bar" style="--d:.5s"></div>
+      <div class="np-bar" style="--d:.8s"></div>
+    </div>
+  </div>
+
+  <!-- tech skills -->
+  <div class="skills">
+    <div class="skills-title">// tech stack</div>
+    <div class="skill-grid" id="skillGrid"></div>
+  </div>
+
+  <!-- social links -->
+  <div class="socials">
+    <a class="soc dis" href="https://discord.com/users/1458168064448401431" target="_blank" id="dBtn">
+      <div class="spl" id="dSpl"></div>
+      <img class="soc-img" id="dImg"
+        src="https://i.supaimg.com/520c45eb-fb85-450c-b726-47c9c17c6e53/b7f06dd4-4ac0-413e-9d37-63c12afb85cb.png"
+        alt="Discord">
+      <div class="soc-info">
+        <div class="soc-n">Discord</div>
+        <div class="soc-s">Aaron Nemis</div>
+      </div>
+      <span class="soc-arr">›</span>
+    </a>
+    <a class="soc spt"
+      href="https://open.spotify.com/user/31fuzkfph2ghhnldbxoj67sm2lga?si=uhmWPZnzR8yxhm0RZRMriw"
+      target="_blank" id="sBtn">
+      <div class="spl" id="sSpl"></div>
+      <img class="soc-img" id="sImg"
+        src="https://i.supaimg.com/520c45eb-fb85-450c-b726-47c9c17c6e53/0b5df036-4984-4cfb-aff3-e8284deaac05.png"
+        alt="Spotify">
+      <div class="soc-info">
+        <div class="soc-n">Spotify</div>
+        <div class="soc-s">AaronNemis · Last.fm</div>
+      </div>
+      <span class="soc-arr">›</span>
+    </a>
+  </div>
+
+  <!-- news -->
+  <div class="news">
+    <div class="nbar">
+      <div class="nd ndr"></div><div class="nd ndy"></div><div class="nd ndg"></div>
+      <span class="nbar-lbl">The Hacker News — Live Feed</span>
+    </div>
+    <div class="ticker">
+      <div class="thn">THN</div>
+      <div class="t-track" id="tTrack"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+</div>
+
+<script>
+const LASTFM_KEY = 'a1a8086a72288dda5459fd67ea731690';
+const LASTFM_USER = 'AaronNemis';
+const DISCORD_ID = '1458168064448401431';
+
+// LOADER
+setTimeout(()=>{
+  document.getElementById('loader').classList.add('out');
+  document.getElementById('main').classList.add('show');
+},2200);
+
+// CLOCK GMT+7
+function updateClock(){
+  const now=new Date();
+  const gmt7=new Date(now.getTime()+(7*60-now.getTimezoneOffset())*60000);
+  const p=n=>String(n).padStart(2,'0');
+  document.getElementById('clockTxt').textContent=`${p(gmt7.getUTCHours())}:${p(gmt7.getUTCMinutes())}:${p(gmt7.getUTCSeconds())}`;
+}
+updateClock();setInterval(updateClock,1000);
+
+// VISITOR COUNTER
+fetch('https://api.countapi.xyz/hit/aaron-nemis-9x7k2q/visits')
+  .then(res => res.json())
+  .then(res => {
+    document.getElementById('visitorCount').textContent = res.value.toLocaleString();
+  })
+  .catch(() => {
+    document.getElementById('visitorCount').textContent = '0';
+  });
+
+// TYPEWRITER BIO
+const lines=[
+  'whoami',
+  '> 17y/o · Thailand 🇹🇭 · GMT+7',
+  '> Hardware modder & gray-hat researcher',
+  '> Interests: kernel, RE, radio, firmware',
+  '> Always tinkering. Never done.',
+];
+let li=0,ci=0,typed=[];
+const termOut=document.getElementById('termOut');
+const termCursor=document.getElementById('termCursor');
+function typeWriter(){
+  if(li>=lines.length){termCursor.style.display='none';return;}
+  const line=lines[li];
+  if(ci<=line.length){
+    termOut.innerHTML=[...typed,line.slice(0,ci)].join('<br>');
+    ci++;setTimeout(typeWriter,ci===1?(li===0?300:180):li===0?72:32);
+  } else {
+    typed.push(line);ci=0;li++;setTimeout(typeWriter,400);
+  }
+}
+setTimeout(typeWriter,2600);
+
+// LANYARD — Discord real-time status
+async function fetchDiscord(){
+  try{
+    const r=await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
+    const d=await r.json();
+    if(!d.success)throw new Error('no data');
+    const data=d.data;
+    const statusMap={online:'online',idle:'idle',dnd:'dnd',offline:'offline'};
+    const status=statusMap[data.discord_status]||'offline';
+    const badge=document.getElementById('dsBadge');
+    badge.className='ds-badge '+status;
+    document.getElementById('dsBadgeTxt').textContent=data.discord_status==='dnd'?'do not disturb':data.discord_status;
+
+    // activity
+    let actText='No activity';
+    if(data.activities&&data.activities.length>0){
+      const act=data.activities.find(a=>a.type===0)||data.activities[0];
+      if(act){
+        actText=act.type===0?`Playing ${act.name}`:
+                act.type===2?`Listening to ${act.details||act.name}`:
+                act.name;
+      }
+    }
+    document.getElementById('dsActivity').textContent=actText;
+
+    // avatar from discord
+    if(data.discord_user?.avatar){
+      const uid=data.discord_user.id;
+      const hash=data.discord_user.avatar;
+      document.getElementById('dsAv').src=`https://cdn.discordapp.com/avatars/${uid}/${hash}.png?size=64`;
+    }
+
+    // online indicator color
+    const onlineEl=document.getElementById('avOnline');
+    const colors={online:'#30d158',idle:'#ffd60a',dnd:'#ff453a',offline:'#8e8e93'};
+    onlineEl.style.background=colors[status]||'#8e8e93';
+    if(status==='offline')onlineEl.style.boxShadow='none';
+    else onlineEl.style.boxShadow=`0 0 10px ${colors[status]}88`;
+
+  }catch(e){
+    document.getElementById('dsActivity').textContent='Unable to fetch status';
+    document.getElementById('dsBadgeTxt').textContent='unknown';
+  }
+}
+fetchDiscord();setInterval(fetchDiscord,30000);
+
+// LAST.FM Now Playing
+async function fetchLastFM(){
+  try{
+    const url=`https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${LASTFM_USER}&api_key=${LASTFM_KEY}&format=json&limit=1`;
+    const r=await fetch(url);
+    const d=await r.json();
+    const tracks=d.recenttracks?.track;
+    if(!tracks||tracks.length===0)throw new Error('no tracks');
+    const track=Array.isArray(tracks)?tracks[0]:tracks;
+    const isNowPlaying=track['@attr']?.nowplaying==='true';
+
+    const trackName=track.name||'Unknown';
+    const artistName=track.artist?.['#text']||'Unknown';
+    const albumArt=track.image?.find(i=>i.size==='large')?.['#text']||'';
+
+    document.getElementById('npTrack').textContent=trackName;
+    document.getElementById('npArtist').textContent=artistName;
+
+    const label=document.getElementById('npLabel');
+    const bars=document.getElementById('npBars');
+
+    if(isNowPlaying){
+      label.textContent='▶ Now Playing';
+      label.className='np-label';
+      bars.classList.remove('paused');
+    } else {
+      label.textContent='⏸ Last Played';
+      label.className='np-label offline';
+      bars.classList.add('paused');
+    }
+
+    const art=document.getElementById('npArt');
+if (isNowPlaying && albumArt && !albumArt.includes('2a96cbd8b46e442fc41c2b86b821562f')) {
+  art.src = albumArt;
+  art.style.display = 'block';
+} else {
+  art.src = '';
+  art.style.display = 'none';
+}
+
+  }catch(e){
+    document.getElementById('npTrack').textContent='Not scrobbling';
+    document.getElementById('npArtist').textContent='Last.fm';
+    document.getElementById('npLabel').textContent='◦ Offline';
+    document.getElementById('npLabel').className='np-label offline';
+    document.getElementById('npBars').classList.add('paused');
+  }
+}
+fetchLastFM();setInterval(fetchLastFM,15000);
+
+// SKILLS
+const skills=[
+  {name:'Linux',color:'#f97316'},{name:'Python',color:'#3b82f6'},
+  {name:'C / C++',color:'#6366f1'},{name:'Reverse Eng.',color:'#ec4899'},
+  {name:'Hardware Mod',color:'#f59e0b'},{name:'RF / SDR',color:'#10b981'},
+  {name:'Firmware',color:'#8b5cf6'},{name:'Networking',color:'#06b6d4'},
+  {name:'CTF',color:'#ef4444'},{name:'Assembly',color:'#84cc16'},
+];
+const sg=document.getElementById('skillGrid');
+skills.forEach(sk=>{
+  const el=document.createElement('div');el.className='skill';
+  el.innerHTML=`<div class="skill-dot" style="background:${sk.color};box-shadow:0 0 5px ${sk.color}55"></div>${sk.name}`;
+  sg.appendChild(el);
+});
+
+// SPLASH
+function splash(el,color){
+  for(let i=0;i<16;i++){
+    const p=document.createElement('div');p.className='sp';
+    const sz=Math.random()*8+4,a=Math.random()*Math.PI*2,d=38+Math.random()*52;
+    const cx=40+Math.random()*25,cy=25+Math.random()*50;
+    p.style.cssText=`width:${sz}px;height:${sz}px;background:${color};left:${cx}%;top:${cy}%;--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px`;
+    el.appendChild(p);setTimeout(()=>p.remove(),800);
+  }
+}
+document.getElementById('dBtn').addEventListener('mouseenter',()=>splash(document.getElementById('dSpl'),'rgba(88,101,242,.6)'));
+document.getElementById('sBtn').addEventListener('mouseenter',()=>splash(document.getElementById('sSpl'),'rgba(30,215,96,.55)'));
+
+// IMG FALLBACKS
+function svgFb(el,c,l){el.onerror=null;el.src=`data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" rx="10" fill="${encodeURIComponent(c)}"/><text x="50%" y="54%" font-size="18" font-family="sans-serif" text-anchor="middle" dominant-baseline="middle" fill="white">${l}</text></svg>`;}
+document.getElementById('dImg').onerror=function(){svgFb(this,'#5865f2','D')};
+document.getElementById('sImg').onerror=function(){svgFb(this,'#1DB954','S')};
+
+// TICKER
+const hl=['Critical RCE Vulnerability Discovered in Widely Used Open Source Library','New Supply Chain Attack Targets npm — 800K+ Downloads Compromised','Zero-Day in Windows Kernel Actively Exploited by APT Group','CISA Issues Emergency Directive Over Critical Cisco IOS XE Flaw','Chinese Hackers Deploy Novel Firmware Implant in Router Attacks','Ransomware Gang Exploits Unpatched Fortinet VPN to Breach Networks','Google Project Zero Drops PoC for Chrome V8 Type Confusion Bug','North Korean Lazarus Group Shifts to macOS Malware Campaign','FBI Warns of AI-Powered Spear Phishing Surge Against Enterprises','New MFA-Bypass Technique Targeting Microsoft 365 Spotted in Wild','Critical SQL Injection Found in CMS Used by 3M+ Websites','Bluetooth Flaw Exposes Billions of Devices — Patch Now'];
+const tr=document.getElementById('tTrack');
+[...hl,...hl].forEach(h=>{const s=document.createElement('span');s.className='ti';s.textContent=h;tr.appendChild(s);});
+</script>
+</body>
+</html>
